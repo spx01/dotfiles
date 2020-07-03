@@ -72,8 +72,8 @@ autocmd FileType c,cpp,objc setlocal commentstring=//%s
 nnoremap <leader>/ :LitSearch 
 
 nnoremap _ "_
-inoremap <silent> <c-s> <esc>:w<cr>i
-inoremap <silent> <c-q> <esc>:wa<cr>i
+inoremap <silent> <c-s> <esc>:w<cr>
+inoremap <silent> <c-q> <esc>:wa<cr>
 nnoremap <silent> <leader><space> :Files<cr>
 nnoremap <silent> <esc> :noh<cr>
 nnoremap <silent> <leader>di :DetectIndent<cr>
