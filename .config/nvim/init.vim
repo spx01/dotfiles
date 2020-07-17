@@ -13,8 +13,8 @@ Plug 'chrisbra/Colorizer'
 Plug 'chriskempson/base16-vim'
 Plug 'dhruvasagar/vim-zoom'
 Plug 'dense-analysis/ale'
-Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
+Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': { -> fzf#install() } }
 Plug 'jremmen/vim-ripgrep'
 Plug 'morhetz/gruvbox'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
