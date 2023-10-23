@@ -16,7 +16,7 @@ alias ls="exa"
 alias la="exa -la"
 alias ll="exa -l"
 alias v="nvim"
-alias k="kakoune"
+alias k="kak"
 
 pg() {
     eval socat - EXEC:\""$@"\",pty,setsid,ctty | eval $PAGER
