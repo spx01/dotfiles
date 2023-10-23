@@ -57,51 +57,51 @@
 )
 
 ;; (deflayer name
-;;   _    _    _    _    _    _    _    _    _    _    _    _    _    _   
+;;   _    _    _    _    _    _    _    _    _    _    _    _    _    _
 ;;   _    _    _    _    _    _    _    _    _    _    _    _    _    _
 ;;   _    _    _    _    _    _    _    _    _    _    _    _    _
-;;   _    _    _    _    _    _    _    _    _    _    _    _   
-;;   _    _    _              _              _    _    _    _   
+;;   _    _    _    _    _    _    _    _    _    _    _    _
+;;   _    _    _              _              _    _    _    _
 ;; )
 
 (deflayer mod-layer
-  _    _    _    _    _    _    _    _    _    _    _    _    _    _   
-  _    _    _    _    _    _    _    _    _    _    _    _    _    _
+  _    _    _    _    _    _    _    _    _    _    _    _    _    del
+  _    _    _    _    _    _    _    h    j    k    l    _    _    _
   _    _    @sm  _    @ldr _    _    lft  down up   rght _    _
-  _    _    _    _    _    _    _    _    _    _    _    _   
-  _    _    _              lctl           _    _    _    _   
+  _    _    _    _    _    _    _    _    _    _    _    _
+  _    _    _              lctl           _    _    _    _
 )
 
 (deflayer shift-mod-layer
-  _    _    _    _    _    _    _    _    _    _    _    _    _    _   
+  _    _    _    _    _    _    _    _    _    _    _    _    _    _
   _    _    _    _    _    _    _    _    _    _    _    _    _    _
   _    _    _    _    _    _    _    home pgdn pgup end  _    _
-  _    _    _    _    _    _    _    _    _    _    _    _   
-  _    _    _              _              _    _    _    _   
+  _    _    _    _    _    _    _    _    _    _    _    _
+  _    _    _              _              _    _    _    _
 )
 
 (deflayer leader
-  XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX  
+  XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX
   XX   XX   XX   XX   XX   @sh  XX   XX   XX   XX   XX   XX   XX   XX
   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX
-  XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX  
-  XX   XX   XX             XX             XX   XX   XX   XX  
+  XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX
+  XX   XX   XX             XX             XX   XX   XX   XX
 )
 
 (deflayer qwerty-mod-overlay
-  _    _    _    _    _    _    _    _    _    _    _    _    _    _   
+  _    _    _    _    _    _    _    _    _    _    _    _    _    _
   _    @tc  _    _    _    _    _    _    _    _    _    _    _    _
   _    _    _    _    _    _    _    _    _    _    _    _    _
-  _    _    _    _    _    _    _    _    _    _    _    _   
-  _    _    _              _              _    _    _    _   
+  _    _    _    _    _    _    _    _    _    _    _    _
+  _    _    _              _              _    _    _    _
 )
 
 (deflayer colemah-dh-mod-overlay
-  _    _    _    _    _    _    _    _    _    _    _    _    _    _   
+  _    _    _    _    _    _    _    _    _    _    _    _    _    _
   _    @tq  _    _    _    _    _    _    _    _    _    _    _    _
   _    _    _    _    _    _    _    _    _    _    _    _    _
-  _    _    _    _    _    _    _    _    _    _    _    _   
-  _    _    _              _              _    _    _    _   
+  _    _    _    _    _    _    _    _    _    _    _    _
+  _    _    _              _              _    _    _    _
 )
 
 (defalias
