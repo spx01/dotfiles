@@ -23,7 +23,3 @@ pg() {
 }
 
 setopt dotglob
-
-if [ -z "$TMUX" ] && [[ "$USER" == "spx" ]]; then
-    tmux
-fi
