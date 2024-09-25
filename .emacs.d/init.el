@@ -1,26 +1,13 @@
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(blink-cursor-mode nil)
- '(custom-enabled-themes '(wombat))
- '(desktop-save-mode nil)
- '(display-line-numbers-type 'relative)
- '(package-selected-packages
-   '(keycast magit consult-flycheck multiple-cursors undo-tree lsp-treemacs flycheck corfu expand-region rg spacious-padding el-fetch avy editorconfig visual-regexp ialign projectile zig-mode orderless consult nerd-icons nerd-icons-completion nerd-icons-dired vertico nerd-icons-ibuffer marginalia))
- '(safe-local-variable-values
-   '((eval setq format-keymap
-	   (lambda nil
-	     (ialign
-	      (point)
-	      (save-excursion
-		(forward-line 5)
-		(left-char 1)
-		(point))
-	      "[A-Z/].*?,\\*?/?\\( *\\)" 1 1 t)))))
- '(save-place-mode t)
- '(tool-bar-mode nil))
+(unless (package-installed-p 'quelpa)
+  (with-temp-buffer
+    (url-insert-file-contents "https://raw.githubusercontent.com/quelpa/quelpa/master/quelpa.el")
+    (eval-buffer)
+    (quelpa-self-upgrade)))
+(quelpa
+ '(quelpa-use-package
+   :fetcher git
+   :url "https://github.com/quelpa/quelpa-use-package.git"))
+(require 'quelpa-use-package)
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -118,10 +105,24 @@
   (global-whitespace-mode 1)
 
   (tool-bar-mode -1)
+  (setq inhibit-startup-screen t)
+  (setq initial-buffer-choice nil)
 
   (setq tab-always-indent 'complete)
 
   (setq enable-recursive-minibuffers t)
+
+  (setq indent-tabs-mode nil)
+
+  (setq gc-cons-threshold 100000000)
+  (setq read-process-output-max (* 1024 1024)) ;; 1mb
+  (setq lsp-use-plists t)
+
+
+  (defun ctabfix ()
+    (when (equal tab-always-indent 'complete)
+      (keymap-set c-mode-base-map "<tab>" #'completion-at-point)))
+  (add-hook 'c-mode-hook #'ctabfix)
 
   (defun my-backward-kill-word ()
     "If there are only whitespaces between the cursor and the previous word, delete only the whitespaces.
@@ -339,16 +340,6 @@ Otherwise, delete the previous word."
   (add-hook 'compilation-filter-hook 'my-colorize-compilation-buffer))
 (put 'narrow-to-region 'disabled nil)
 
-;; TODO: remove
-(defadvice align-regexp (around align-regexp-with-spaces activate)
-  (let ((indent-tabs-mode nil))
-    ad-do-it))
-
-;; (use-package editorconfig
-;;   :ensure t
-;;   :config
-;;   (editorconfig-mode 1))
-
 (defalias 'keymap-5lines
    (kmacro "C-a M-: ( f u n c a l l SPC f o r m a t - k e y m a p ) <return> <return>"))
 
@@ -388,6 +379,7 @@ Otherwise, delete the previous word."
 
 (use-package corfu
   :ensure t
+  :after orderless
   ;; Optional customizations
   :custom
   (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
@@ -409,7 +401,19 @@ Otherwise, delete the previous word."
   ;; be used globally (M-/).  See also the customization variable
   ;; `global-corfu-modes' to exclude certain modes.
   :init
-  (global-corfu-mode))
+  (global-corfu-mode)
+  :config
+  (keymap-set corfu-map "M-q" #'corfu-quick-complete)
+  (keymap-set corfu-map "C-q" #'corfu-quick-insert)
+  (defun corfu-move-to-minibuffer ()
+    (interactive)
+    (pcase completion-in-region--data
+      (`(,beg ,end ,table ,pred ,extras)
+       (let ((completion-extra-properties extras)
+             completion-cycle-threshold completion-cycling)
+         (consult-completion-in-region beg end table pred)))))
+  (keymap-set corfu-map "M-m" #'corfu-move-to-minibuffer)
+  (add-to-list 'corfu-continue-commands #'corfu-move-to-minibuffer))
 
 (use-package flycheck
   :ensure t
@@ -417,17 +421,54 @@ Otherwise, delete the previous word."
   ;; (add-hook 'after-init-hook #'global-flycheck-mode)
   (setq-default flycheck-check-syntax-automatically '(save)))
 
-(use-package lsp-treemacs
-  :ensure t
-  :config
-  (lsp-treemacs-sync-mode 1))
-
 (use-package lsp-mode
+  ;; :quelpa
+  ;; (lsp-mode
+  ;;  :fetcher github
+  ;;  :repo emacs-lsp/lsp-mode
+  ;;  :commit "a478e03cd1a5dc84ad496234fd57241ff9dca57a")
   :ensure t
+  :init
+  (setq lsp-use-plists t)
   :config
   (setq lsp-enable-snippet nil)
-  ;; (add-hook 'c-mode-hook #'lsp)
+  (defun lsp-booster--advice-json-parse (old-fn &rest args)
+    "Try to parse bytecode instead of json."
+    (or
+     (when (equal (following-char) ?#)
+       (let ((bytecode (read (current-buffer))))
+         (when (byte-code-function-p bytecode)
+           (funcall bytecode))))
+     (apply old-fn args)))
+  (advice-add (if (progn (require 'json)
+                         (fboundp 'json-parse-buffer))
+                  'json-parse-buffer
+                'json-read)
+              :around
+              #'lsp-booster--advice-json-parse)
+
+  (defun lsp-booster--advice-final-command (old-fn cmd &optional test?)
+    "Prepend emacs-lsp-booster command to lsp CMD."
+    (let ((orig-result (funcall old-fn cmd test?)))
+      (if (and (not test?)                             ;; for check lsp-server-present?
+               (not (file-remote-p default-directory)) ;; see lsp-resolve-final-command, it would add extra shell wrapper
+               lsp-use-plists
+               (not (functionp 'json-rpc-connection))  ;; native json-rpc
+               (executable-find "emacs-lsp-booster"))
+          (progn
+            (when-let ((command-from-exec-path (executable-find (car orig-result))))  ;; resolve command from exec-path (in case not found in $PATH)
+              (setcar orig-result command-from-exec-path))
+            (message "Using emacs-lsp-booster for %s!" orig-result)
+            (cons "emacs-lsp-booster" orig-result))
+        orig-result)))
+  (advice-add 'lsp-resolve-final-command :around #'lsp-booster--advice-final-command)
   )
+
+(use-package lsp-ui
+  :ensure t)
+
+(use-package consult-lsp
+  :ensure t)
 
 (use-package undo-tree
   :ensure t
@@ -447,7 +488,55 @@ Otherwise, delete the previous word."
 (use-package magit
   :ensure t)
 
-(use-package keycast
+;; (use-package keycast
+;;   :config
+;;   (keycast-mode-line-mode 1)
+;;   (set-face-attribute 'keycast-key nil :background "dark slate blue"))
+
+(use-package transpose-frame
+  :ensure t)
+
+(use-package clang-format+
+  :ensure t)
+
+(add-to-list 'load-path "~/.emacs.d/pkg")
+
+(use-package evil
+  :ensure t
   :config
-  (keycast-mode-line-mode 1)
-  (set-face-attribute 'keycast-key nil :background "dark slate blue"))
+  (evil-mode 1)
+  (setq evil-default-state 'emacs))
+
+(use-package goto-chg
+  :ensure t)
+
+(use-package cape
+  ;; Bind prefix keymap providing all Cape commands under a mnemonic key.
+  ;; Press C-c p ? to for help.
+  :after projectile
+  :bind ("C-c p" . cape-prefix-map) ;; Alternative keys: M-p, M-+, ...
+  ;; Alternatively bind Cape commands individually.
+  ;; :bind (("C-c p d" . cape-dabbrev)
+  ;;        ("C-c p h" . cape-history)
+  ;;        ("C-c p f" . cape-file)
+  ;;        ...)
+  :init
+  ;; Add to the global default value of `completion-at-point-functions' which is
+  ;; used by `completion-at-point'.  The order of the functions matters, the
+  ;; first function returning a result wins.  Note that the list of buffer-local
+  ;; completion functions takes precedence over the global list.
+  (add-hook 'completion-at-point-functions #'cape-dabbrev)
+  (add-hook 'completion-at-point-functions #'cape-file)
+  (add-hook 'completion-at-point-functions #'cape-elisp-block)
+  ;; (add-hook 'completion-at-point-functions #'cape-history)
+  ;; ...
+  (setq-local completion-at-point-functions
+              (mapcar #'cape-company-to-capf
+                      (list #'company-files #'company-keywords #'company-dabbrev)))
+  )
+
+;; TODO: embark
+
+;; Local Variables:
+;; indent-tabs-mode: nil
+;; End:
