@@ -9,31 +9,6 @@
    :url "https://github.com/quelpa/quelpa-use-package.git"))
 (require 'quelpa-use-package)
 
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(default ((t (:family "Mononoki Nerd Font Mono" :foundry "UKWN" :slant normal :weight regular :height 158 :width normal))))
- '(fringe ((t :background "#242424")))
- '(header-line ((t :box (:line-width 4 :color "#303030" :style nil))))
- '(header-line-highlight ((t :box (:color "#f6f3e8"))))
- '(keycast-key ((t (:background "dark slate blue"))))
- '(line-number ((t :background "#242424")))
- '(mode-line ((t :box (:line-width 6 :color "#444444" :style nil))))
- '(mode-line-active ((t :box (:line-width 6 :color "#444444" :style nil))))
- '(mode-line-highlight ((t :box (:color "#f6f3e8"))))
- '(mode-line-inactive ((t :box (:line-width 6 :color "#444444" :style nil))))
- '(tab-bar-tab ((t :box (:line-width 4 :color "grey85" :style nil))))
- '(tab-bar-tab-inactive ((t :box (:line-width 4 :color "grey75" :style nil))))
- '(tab-line-tab ((t)))
- '(tab-line-tab-active ((t)))
- '(tab-line-tab-inactive ((t)))
- '(vertical-border ((t :background "#242424" :foreground "#242424")))
- '(window-divider ((t (:background "#242424" :foreground "#242424"))))
- '(window-divider-first-pixel ((t (:background "#242424" :foreground "#242424"))))
- '(window-divider-last-pixel ((t (:background "#242424" :foreground "#242424")))))
-
 (use-package icons
   :ensure t
   :config
@@ -123,6 +98,7 @@
     (when (equal tab-always-indent 'complete)
       (keymap-set c-mode-base-map "<tab>" #'completion-at-point)))
   (add-hook 'c-mode-hook #'ctabfix)
+  (add-hook 'c++-mode-hook #'ctabfix)
 
   (defun my-backward-kill-word ()
     "If there are only whitespaces between the cursor and the previous word, delete only the whitespaces.
@@ -499,8 +475,6 @@ Otherwise, delete the previous word."
 (use-package clang-format+
   :ensure t)
 
-(add-to-list 'load-path "~/.emacs.d/pkg")
-
 (use-package evil
   :ensure t
   :config
@@ -511,6 +485,7 @@ Otherwise, delete the previous word."
   :ensure t)
 
 (use-package cape
+  :ensure t
   ;; Bind prefix keymap providing all Cape commands under a mnemonic key.
   ;; Press C-c p ? to for help.
   :after projectile
@@ -536,6 +511,14 @@ Otherwise, delete the previous word."
   )
 
 ;; TODO: embark
+(use-package embark
+  :ensure t)
+
+(use-package embark-consult
+  :ensure t)
+
+(use-package wgrep
+  :ensure t)
 
 ;; Local Variables:
 ;; indent-tabs-mode: nil
